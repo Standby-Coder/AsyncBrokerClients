@@ -1,9 +1,0 @@
-BrokerConfig:
-  host: "127.0.0.1"
-  port: "5672"
-  username: "guest"
-  passwordenv: "BROKERPASSWORD"
-  queuename: "test_queue"
-AppConfig:
-  debug: true
-  contexttimeout: 5
