@@ -1,10 +1,9 @@
 package models
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 var (
@@ -13,22 +12,29 @@ var (
 )
 
 type AppState struct {
-	Debug          bool `mapstructure:"debug"`
-	ContextTimeout int  `mapstructure:"contexttimeout"`
+	Debug          bool
+	ContextTimeout int
 }
 
 type BrokerConfig struct {
-	Host        string `mapstructure:"host"`
-	Port        string `mapstructure:"port"`
-	Username    string `mapstructure:"username"`
-	QueueName   string `mapstructure:"queuename"`
-	PasswordEnv string `mapstructure:"passwordenv"`
-	Password    string `mapstructure:"-"`
+	Host         string
+	Port         string
+	Username     string
+	QueueName    string
+	Password     string
+	PasswordFile string
 }
 
-func (bc *BrokerConfig) LoadPasswordFromEnv() {
-	godotenv.Load("./configs/.env")
-	bc.Password = os.Getenv(bc.PasswordEnv)
+func (bc *BrokerConfig) LoadPasswordFromFile() {
+	data, err := os.ReadFile(bc.PasswordFile)
+	if err != nil {
+		fmt.Printf("Failed to read password file: %v", err)
+	}
+	decoded, err := base64.StdEncoding.DecodeString(string(data))
+	if err != nil {
+		fmt.Printf("Failed to decode password from file: %v", err)
+	}
+	bc.Password = string(decoded)
 }
 
 func (bc *BrokerConfig) GetConnectionString() string {

@@ -2,13 +2,13 @@ FROM golang:1.25-alpine AS builder
 
 RUN apk add build-base
 
-RUN mkdir -p $GOPATH/src/producer
+RUN mkdir -p $GOPATH/src/consumer
 
-ADD . $GOPATH/src/producer
-WORKDIR $GOPATH/src/producer
+ADD . $GOPATH/src/consumer
+WORKDIR $GOPATH/src/consumer
 
 RUN go mod download
-RUN go build -o /go/bin/producer
+RUN go build -o /go/bin/consumer
 
 FROM alpine:latest
 
@@ -21,10 +21,10 @@ ENV BROKER_QUEUE_NAME=test_queue
 ENV APP_DEBUG=true
 ENV APP_CONTEXT_TIMEOUT=10
 
-COPY --from=builder /go/bin/producer .
-COPY --from=builder /go/src/producer/entrypoint.sh .
-RUN chmod +x ./producer
+COPY --from=builder /go/bin/consumer .
+COPY --from=builder /go/src/consumer/entrypoint.sh .
+RUN chmod +x ./consumer
 RUN chmod +x ./entrypoint.sh
 
 
-ENTRYPOINT [ "./entrypoint.sh", "./producer" ]
+ENTRYPOINT [ "./entrypoint.sh", "./consumer" ]

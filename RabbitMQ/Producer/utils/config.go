@@ -2,10 +2,11 @@ package utils
 
 import (
 	"context"
-	"log"
+	"os"
 	"producer/models"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
@@ -14,28 +15,30 @@ var (
 )
 
 func InitConfig() {
-	// Set up Viper to read the config file
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./configs")
+	// Get config vars from env file and load into struct
+	godotenv.Load(".env")
+	viper.AutomaticEnv()
 
-	// This reads the config file and then returns a viper
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading config file: %v", err)
+	models.Config = &models.BrokerConfig{
+		Host:      viper.GetString("BROKER_HOST"),
+		Port:      viper.GetString("BROKER_PORT"),
+		Username:  viper.GetString("BROKER_USERNAME"),
+		QueueName: viper.GetString("BROKER_QUEUE_NAME"),
 	}
 
-	log.Println("Config file loaded successfully")
-
-	// Map the config values to the BrokerConfig struct
-	if err := viper.UnmarshalKey("BrokerConfig", models.Config); err != nil {
-		log.Fatalf("Error unmarshaling config: %v", err)
+	models.AppStateVar = &models.AppState{
+		Debug:          viper.GetBool("APP_DEBUG"),
+		ContextTimeout: viper.GetInt("APP_CONTEXT_TIMEOUT"),
 	}
-	models.Config.LoadPasswordFromEnv()
 
-	// Map the config values to the AppState struct
-	if err := viper.UnmarshalKey("AppConfig", models.AppStateVar); err != nil {
-		log.Fatalf("Error unmarshaling app state config: %v", err)
+	// Check if file exists
+	if _, err := os.Stat("/run/secrets/broker_password"); err == nil {
+		models.Config.PasswordFile = "/run/secrets/broker_password"
+	} else {
+		models.Config.PasswordFile = "./broker.txt"
 	}
+
+	models.Config.LoadPasswordFromFile()
 
 	Info("Configuration initialized successfully")
 	Info("Debug mode is enabled")
