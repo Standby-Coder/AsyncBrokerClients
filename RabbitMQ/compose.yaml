@@ -1,7 +1,7 @@
 services:
 
   producer-1:
-    image: async-broker-producer:latest
+    image: rmq-producer:latest
     build:
       context: ./Producer
       dockerfile: Dockerfile
@@ -19,7 +19,7 @@ services:
     entrypoint: ["sh", "-c", "tail -f /dev/null"]
 
   consumer-1:
-    image: async-broker-consumer:latest
+    image: rmq-consumer:latest
     build:
       context: ./Consumer
       dockerfile: Dockerfile
