@@ -72,21 +72,21 @@ jobs:
 
             if (needsFormatting) {
               const body = `
-${marker}
-❌ **gofmt check failed**
-
-The following files are not properly formatted:
-
-\`\`\`
-${files}
-\`\`\`
-
-Run locally:
-
-\`\`\`bash
-gofmt -w .
-\`\`\`
-`;
+                ${marker}
+                ❌ **gofmt check failed**
+                
+                The following files are not properly formatted:
+                
+                \`\`\`
+                ${files}
+                \`\`\`
+                
+                Run locally:
+                
+                \`\`\`bash
+                gofmt -w .
+                \`\`\`
+                `;
 
               if (existing) {
                 await github.rest.issues.updateComment({
