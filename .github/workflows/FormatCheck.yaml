@@ -71,7 +71,7 @@ jobs:
             );
 
             if (needsFormatting) {
-              const body = `
+              const body = "
                 ${marker}
                 ❌ **gofmt check failed**
                 
@@ -86,7 +86,7 @@ jobs:
                 \`\`\`bash
                 gofmt -w .
                 \`\`\`
-                `;
+                ";
 
               if (existing) {
                 await github.rest.issues.updateComment({
