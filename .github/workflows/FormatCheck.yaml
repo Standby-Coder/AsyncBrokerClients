@@ -36,28 +36,27 @@ jobs:
           echo "$files" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Run gofmt
-        id: gofmt
-        if: steps.changed.outputs.files != ''
-        run: |
-          needs_formatting=false
-          unformatted=""
+          - name: Run gofmt
+            id: gofmt
+            if: steps.changed.outputs.files != ''
+            run: |
+              files="${{ steps.changed.outputs.files }}"
+          
+              # Convert newlines to spaces
+              files=$(echo "$files" | tr '\n' ' ')
+          
+              unformatted=$(gofmt -l $files)
+          
+              if [ -n "$unformatted" ]; then
+                echo "needs_formatting=true" >> $GITHUB_OUTPUT
+                echo "unformatted<<EOF" >> $GITHUB_OUTPUT
+                echo "$unformatted" >> $GITHUB_OUTPUT
+                echo "EOF" >> $GITHUB_OUTPUT
+              else
+                echo "needs_formatting=false" >> $GITHUB_OUTPUT
+              fi
 
-          while IFS= read -r file; do
-            if [ -n "$(gofmt -l "$file")" ]; then
-              needs_formatting=true
-              unformatted="$unformatted$file\n"
-            fi
-          done <<< "${{ steps.changed.outputs.files }}"
-
-          if [ "$needs_formatting" = true ]; then
-            echo "needs_formatting=true" >> $GITHUB_OUTPUT
-            echo -e "unformatted<<EOF" >> $GITHUB_OUTPUT
-            echo -e "$unformatted" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          else
-            echo "needs_formatting=false" >> $GITHUB_OUTPUT
-          fi
+          
 
       - name: Create or update PR comment
         if: always()
