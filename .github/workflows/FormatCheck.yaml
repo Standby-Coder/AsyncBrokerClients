@@ -40,7 +40,7 @@ jobs:
         id: gofmt
         if: steps.changed.outputs.files != ''
         run: |
-          unformatted=$(gofmt -l ${{ steps.changed.outputs.files }})
+          unformatted=$(echo "${{ steps.changed.outputs.files }}" | xargs gofmt -l)
 
           if [ -n "$unformatted" ]; then
             echo "needs_formatting=true" >> $GITHUB_OUTPUT
@@ -71,7 +71,7 @@ jobs:
             );
 
             if (needsFormatting) {
-              const body = "
+              const body = `
                 ${marker}
                 ❌ **gofmt check failed**
                 
@@ -86,7 +86,7 @@ jobs:
                 \`\`\`bash
                 gofmt -w .
                 \`\`\`
-                ";
+                `;
 
               if (existing) {
                 await github.rest.issues.updateComment({
