@@ -40,12 +40,20 @@ jobs:
         id: gofmt
         if: steps.changed.outputs.files != ''
         run: |
-          unformatted=$(echo "${{ steps.changed.outputs.files }}" | xargs gofmt -l)
+          needs_formatting=false
+          unformatted=""
 
-          if [ -n "$unformatted" ]; then
+          while IFS= read -r file; do
+            if [ -n "$(gofmt -l "$file")" ]; then
+              needs_formatting=true
+              unformatted="$unformatted$file\n"
+            fi
+          done <<< "${{ steps.changed.outputs.files }}"
+
+          if [ "$needs_formatting" = true ]; then
             echo "needs_formatting=true" >> $GITHUB_OUTPUT
-            echo "unformatted<<EOF" >> $GITHUB_OUTPUT
-            echo "$unformatted" >> $GITHUB_OUTPUT
+            echo -e "unformatted<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$unformatted" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           else
             echo "needs_formatting=false" >> $GITHUB_OUTPUT
