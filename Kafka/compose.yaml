@@ -1,0 +1,52 @@
+services:
+
+  producer-1:
+    image: kafka-producer:latest
+    build:
+      context: ./Producer
+      dockerfile: Dockerfile
+    environment:
+      - BROKER_HOST=rmqtest
+      - BROKER_PORT=5672
+      - BROKER_USERNAME=guest
+      - BROKER_QUEUE_NAME=test_queue
+      - APP_DEBUG=true
+      - APP_CONTEXT_TIMEOUT=10
+    networks:
+      - backend
+    depends_on:
+      - rmqtest
+    entrypoint: ["sh", "-c", "tail -f /dev/null"]
+
+  consumer-1:
+    image: kafka-consumer:latest
+    build:
+      context: ./Consumer
+      dockerfile: Dockerfile
+    environment:
+      - BROKER_HOST=rmqtest
+      - BROKER_PORT=5672
+      - BROKER_USERNAME=guest
+      - BROKER_QUEUE_NAME=test_queue
+      - APP_DEBUG=true
+      - APP_CONTEXT_TIMEOUT=10
+    networks:
+      - backend
+    depends_on:
+      - rmqtest
+    entrypoint: ["sh", "-c", "tail -f /dev/null"]
+
+  rmqtest:
+    image: rabbitmq:latest
+    ports:
+      - "5672:5672"   # RabbitMQ main port
+      - "15672:15672" # RabbitMQ management UI
+    networks:
+      - backend
+
+networks:
+  backend:
+
+secrets:
+  broker-password:
+    file: ./broker.txt
